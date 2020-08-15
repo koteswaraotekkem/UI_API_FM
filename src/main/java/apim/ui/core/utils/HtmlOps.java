@@ -4,6 +4,11 @@ package apim.ui.core.utils;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Date;
 import java.util.List;
@@ -30,7 +35,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.google.common.base.Function;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 
 /** This Class is used to do the Selenium operations */
 
@@ -39,10 +44,9 @@ import lombok.extern.slf4j.Slf4j;
  *
  * @author ganma05
  */
-@Slf4j
 public class HtmlOps {
 	static long ajax_pageload_time = 15; // Seconds for page load.
-	public static final int DEFAULT_UIELEMENT_WAIT_TIME = 10;
+	public static final int DEFAULT_UIELEMENT_WAIT_TIME = 15;
 	protected static final int WAIT_TIME = 45; // in seconds
 	private static final long WAIT_POLL_TIME = 5000; // in milliseconds
 	public static WebDriver driver;
@@ -68,14 +72,9 @@ public class HtmlOps {
 	 */
 	public WebElement setInputField(String value, WebElement htmlelement) throws ElementNotVisibleException {
 		int switchedToFrame = 0;
-
 		WebElement element = waitForElementToLoad(htmlelement);
-
-		log.info(value + ": element: " + htmlelement);
 		try {
-
 			if (null == element) {
-
 				WebElement loginFrame = driver.findElement(By.tagName("iframe"));
 				driver.switchTo().frame(loginFrame);
 				element = htmlelement;
@@ -98,7 +97,7 @@ public class HtmlOps {
 					tries++;
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
-					log.error(e.getStackTrace().toString());
+					System.out.println(e.getStackTrace().toString());
 				}
 			}
 
@@ -106,7 +105,6 @@ public class HtmlOps {
 				// intermittently unable to enter the data for fields like password and confirm
 				// password.
 				// try click on the element text field before entering the input.
-				log.info("In SetInputField(): before click on the element");
 				element.click();
 			} catch (Exception e) {
 
@@ -118,8 +116,7 @@ public class HtmlOps {
 			} catch (Exception e) {
 			}
 		} else {
-
-			log.info("Element not found: html element: " + htmlelement + ". so value could not be entered: " + value);
+			System.out.println("Element not found: html element: " + htmlelement + ". so value could not be entered: " + value);
 		}
 
 		if (switchedToFrame == 1) {
@@ -127,6 +124,36 @@ public class HtmlOps {
 		}
 
 		return element;
+	}
+
+	/**
+	 * Method to ensure that a checkbox is checked.
+	 * If not checked, check it.
+	 * If checked, do nothing.
+	 *
+	 * @param htmlElement - checkbox input element
+	 * @return true if htmlElement is selected
+	 */
+	public boolean checkCheckbox(WebElement htmlElement) {
+		if (isElementPresent(htmlElement) && !isElementSelected(htmlElement)) {
+			htmlElement.click();
+		}
+		return isElementSelected(htmlElement);
+	}
+
+	/**
+	 * Method to ensure that a checkbox is unchecked.
+	 * If not checked, do nothing.
+	 * If checked, uncheck it.
+	 *
+	 * @param htmlElement - checkbox input element
+	 * @return true if htmlElement is unselected
+	 */
+	public boolean uncheckCheckbox(WebElement htmlElement) {
+		if (isElementSelected(htmlElement)) {
+			htmlElement.click();
+		}
+		return !isElementSelected(htmlElement);
 	}
 
 	/**
@@ -141,7 +168,7 @@ public class HtmlOps {
 
 	public void click(WebElement element) {
 		try {
-			waitForElementToLoad(element);
+			waitForElementVisibility(20,element);
 			element.click();
 		} catch (StaleElementReferenceException sere) {
 			// simply retry finding the element in the refreshed DOM
@@ -150,7 +177,7 @@ public class HtmlOps {
 			scrollingToElementofAPage(element);
 			element.click();
 		} catch (TimeoutException toe) {
-			log.error("Element identified by " + element.toString() + " was not clickable after 10 seconds");
+			System.out.println("Element identified by " + element.toString() + " was not clickable after 10 seconds");
 			throw toe;
 		}
 	}
@@ -158,9 +185,7 @@ public class HtmlOps {
 	public void selectByVisibleText(WebElement element, String visibleText) {
 		Select select;
 		try {
-			log.info("Selecting " + visibleText + " in element: " + element);
 			waitForElementToLoad(element);
-			element.click();
 			select = new Select(element);
 			select.selectByVisibleText(visibleText);
 		} catch (StaleElementReferenceException sere) {
@@ -169,16 +194,15 @@ public class HtmlOps {
 			select = new Select(element);
 			select.selectByVisibleText(visibleText);
 		} catch (TimeoutException toe) {
-			log.error("Element identified by " + element.toString() + " was not clickable after 10 seconds");
+			System.out.println("Element " + element.toString() + " was not selectable");
 		} catch (UnexpectedTagNameException notSelectException) {
-			log.error("Element " + element.toString() + " is not of type Select element");
+			System.out.println("Element " + element.toString() + " is not of type Select element");
 		}
 	}
 
 	public void selectByIndex(WebElement element, int index) {
 		Select select;
 		try {
-			log.info("Selecting element on index " + index + " : " + element);
 			waitForElementToLoad(element);
 			element.click();
 			select = new Select(element);
@@ -189,10 +213,30 @@ public class HtmlOps {
 			select = new Select(element);
 			select.selectByIndex(index);
 		} catch (TimeoutException toe) {
-			log.error("Element identified by " + element.toString() + " was not clickable after 10 seconds");
+			System.out.println("Element " + element.toString() + " was not selectable");
 		} catch (UnexpectedTagNameException notSelectException) {
-			log.error("Element " + element.toString() + " is not of type Select element");
+			System.out.println("Element " + element.toString() + " is not of type Select");
 		}
+	}
+	
+	public List<WebElement> getAllDropDownValues(WebElement element) {
+		Select select = null;
+		try {
+			waitForElementToLoad(element);
+			select = new Select(element);
+			List<WebElement> dropDwnVals = select.getOptions();
+			return dropDwnVals;
+			
+		} catch (StaleElementReferenceException sere) {
+			List<WebElement> dropDwnVals = select.getOptions();
+			return dropDwnVals;
+			
+		} catch (TimeoutException toe) {
+			System.out.println("Element " + element.toString() + " was not selectable");
+		} catch (UnexpectedTagNameException notSelectException) {
+			System.out.println("Element " + element.toString() + " is not of type Select");
+		}
+		return null;
 	}
 
 	// in case you know, java scriptExecutor need to execute for the element to
@@ -207,9 +251,9 @@ public class HtmlOps {
 		try {
 
 			element = waitForElementToLoad(name);
-			log.info("element: " + element);
+			System.out.println("element: " + element);
 		} catch (Exception e) {
-			log.warn("Exception while waiting for element: " + element + ": " + e.getMessage());
+			System.out.println("Exception while waiting for element: " + element + ": " + e.getMessage());
 		}
 		if (null != element) {
 
@@ -238,7 +282,7 @@ public class HtmlOps {
 		try {
 			return wait.until(AllAjaxRequest());
 		} catch (Exception e) {
-			log.debug("Exception in waitForAllAjaxRequests " + e);
+			System.out.println("Exception in waitForAllAjaxRequests " + e);
 		}
 		return result;
 	}
@@ -246,10 +290,10 @@ public class HtmlOps {
 	public ExpectedCondition<Boolean> AllAjaxRequest() {
 		return new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
-				log.info("waiting for jQuery.active in AllAjaxRequest()");
+				System.out.println("waiting for jQuery.active in AllAjaxRequest()");
 				boolean toReturn = ((JavascriptExecutor) driver).executeScript("return jQuery.active;").toString()
 						.equals("0");
-				log.info("returning from wait for jQuery.active in AllAjaxRequest()");
+				System.out.println("returning from wait for jQuery.active in AllAjaxRequest()");
 				if (toReturn) {
 					return toReturn;
 				}
@@ -290,6 +334,12 @@ public class HtmlOps {
 		return element.getAttribute("value");
 	}
 
+	public String get_SelectedOption(WebElement element) {
+		Select select = new Select(element);
+		WebElement selectedElement = select.getFirstSelectedOption();
+		String selectedOption = selectedElement.getText();
+		return selectedOption;
+	}
 	/** Switch to Default Frame */
 	public void switchToDefaultFrame() {
 		driver.switchTo().defaultContent();
@@ -313,7 +363,7 @@ public class HtmlOps {
 	 * @throws ElementNotVisibleException
 	 */
 	public String getElementText(WebElement element) throws ElementNotVisibleException {
-
+		waitForElementVisibility(20, element);
 		String val = element.getText();
 		if (null != val && !val.isEmpty()) {
 			return val;
@@ -350,6 +400,9 @@ public class HtmlOps {
 		} catch (ElementNotVisibleException e) {
 			return false;
 		}
+		catch (org.openqa.selenium.NoSuchElementException  e) {
+			return false;
+		}
 	}
 
 	/**
@@ -367,6 +420,20 @@ public class HtmlOps {
 	}
 
 	/**
+	 * Method to check if element is selected
+	 *
+	 * @param element Webelement to check selection of
+	 * @return True if element is selected
+	 */
+	public boolean isElementSelected(WebElement element) {
+		try {
+			return waitForElementToLoad(element).isSelected();
+		} catch (org.openqa.selenium.ElementNotSelectableException e) {
+			return false;
+		}
+	}
+
+	/**
 	 * Method is to check presence of element
 	 *
 	 * @param by
@@ -375,17 +442,35 @@ public class HtmlOps {
 	 */
 	public boolean isElementExists(By by) {
 		boolean isExists = false;
-
-		log.info("Checking element exists or not");
 		try {
 			driver.findElement(by);
-			log.info("Element exists");
 			isExists = true;
 		} catch (Exception e) {
-			log.info("Element does not exists");
+
 		}
 
 		return isExists;
+	}
+
+	/**
+	 * Method to wait for a WebElement to be displayed for time in 'DEFAULT_UIELEMENT_WAIT_TIME'
+	 *
+	 * @param element
+	 * @return
+	 */
+	public boolean isElementPresentByWait(WebElement element) {
+		boolean isPresent = false;
+
+		WebDriverWait wait = new WebDriverWait(driver, DEFAULT_UIELEMENT_WAIT_TIME);
+		try {
+			if (wait.until(ExpectedConditions.visibilityOfAllElements(element)) != null) {
+				isPresent = true;
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
+		return isPresent;
 	}
 
 	/** Refresh current page */
@@ -412,7 +497,7 @@ public class HtmlOps {
 			waitForAlert(timeoutInSeconds);
 			Alert alert = driver.switchTo().alert();
 			// Get the text of the alert or prompt
-			log.info(alert.getText());
+			System.out.println(alert.getText());
 			// And acknowledge the alert (equivalent to clicking "OK")
 			alert.accept();
 		} catch (Exception e) {
@@ -439,11 +524,72 @@ public class HtmlOps {
 	public void waitForAlert(long secondsToWait) {
 		WebDriverWait wait = new WebDriverWait(driver, secondsToWait);
 		if (wait.until(ExpectedConditions.alertIsPresent()) == null)
-			log.info("alert was not present");
+			System.out.println("alert was not present");
 		else
-			log.info("alert was present");
+			System.out.println("alert was present");
 	}
 
+	public void waitForElementVisibility(long secondsToWait, WebElement element) {
+		WebDriverWait wait = new WebDriverWait(driver, secondsToWait);
+		if (wait.until(ExpectedConditions.visibilityOfAllElements(element)) != null)
+			System.out.println("element is visible" + element.toString().substring(element.toString().indexOf("->")));
+		else
+			System.out.println("element is not visible" + element.toString().substring(element.toString().indexOf("->")));
+	}
+
+	public void waitForElementIsClickable(long secondsToWait, WebElement element) {
+		WebDriverWait wait = new WebDriverWait(driver, secondsToWait);
+		if (wait.until(ExpectedConditions.elementToBeClickable(element)) != null)
+			System.out.println("element is clckable" + element.toString().substring(element.toString().indexOf("->")));
+		else
+			System.out.println("element is not clckable" + element.toString().substring(element.toString().indexOf("->")));
+	}
+	
+	public boolean isElementPresentByWait(long secondsToWait, By element) {
+		boolean isPresent = false;
+
+		WebDriverWait wait = new WebDriverWait(driver, secondsToWait);
+		try {
+			if (wait.until(ExpectedConditions.presenceOfElementLocated(element)) != null) {
+				isPresent = true;
+			} else if (wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(element)) != null) {
+				isPresent = true;
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
+		return isPresent;
+	}
+
+	public void waitForStaledElement(long secondsToWait, WebElement element) {
+		WebDriverWait wait = new WebDriverWait(driver, secondsToWait);
+		try {
+
+			if (wait.ignoring(StaleElementReferenceException.class)
+					.until(ExpectedConditions.visibilityOf(element)) != null) {
+				System.out.println("element is attached to dom" + element);
+			}
+
+		} catch (Exception e) {
+			System.out.println("element is Not attached to dom" + element.toString());
+		}
+	}
+	
+	public void waitForStaledElement(long secondsToWait, By element) {
+		WebDriverWait wait = new WebDriverWait(driver, secondsToWait);
+		try {
+
+			if (wait.ignoring(StaleElementReferenceException.class)
+					.until(ExpectedConditions.visibilityOfElementLocated(element)) != null) {
+				System.out.println("element is attached to dom" + element);
+			}
+
+		} catch (Exception e) {
+			System.out.println("element is Not attached to dom" + element.toString());
+		}
+	}
+	
 	/**
 	 * Execute java script
 	 *
@@ -455,6 +601,19 @@ public class HtmlOps {
 		return js.executeScript(javaScript);
 	}
 
+	public Object executeJavaScript(String javaScript, WebElement element) {
+		JavascriptExecutor js = (JavascriptExecutor) driver;
+		return js.executeScript(javaScript, element);
+	}
+
+	public Object clearTextField(WebElement element) {
+		JavascriptExecutor js = (JavascriptExecutor) driver;
+		return js.executeScript("arguments[0].value ='';", element);
+	}
+
+	public void clearTextFieldWithKeys(WebElement element) {
+		element.sendKeys(Keys.chord(Keys.CONTROL, "a", Keys.DELETE));
+	}
 	/**
 	 * *waitForElementToLoad called from click if page is already in refreshing
 	 * state, do wait commands to complete the page refresh
@@ -462,12 +621,9 @@ public class HtmlOps {
 	 * @return
 	 */
 	public WebElement waitForElementToLoad(WebElement element) throws ElementNotVisibleException {
-
 		// speed check of the presence of element, if page is already refreshed and
 		// element is found
 		// then no need of remaining if conditions
-		log.info("Inside wait for element to load method");
-
 		waitForJStoLoad();
 		try {
 
@@ -483,9 +639,15 @@ public class HtmlOps {
 		return element;
 	}
 
+	
 	/** Scroll to bottom of webpage */
 	public void scrollingToBottomofAPage() {
 		((JavascriptExecutor) driver).executeScript("window.scrollTo(0, document.body.scrollHeight)");
+	}
+
+	/** Scroll to bottom of webpage */
+	public void scrollToTopOfThePage() {
+		((JavascriptExecutor) driver).executeScript("window.scrollTo(0, 0)");
 	}
 
 	/**
@@ -498,12 +660,10 @@ public class HtmlOps {
 	}
 
 	public Boolean isElementDisplayed(final By locator) {
-		log.info("Verify the element is displayed by using the locator: " + locator);
-		Wait<WebDriver> wait = new FluentWait(driver).withTimeout(Duration.ofSeconds(WAIT_TIME))
+		Wait<WebDriver> wait = new FluentWait<>(driver).withTimeout(Duration.ofSeconds(WAIT_TIME))
 				.pollingEvery(Duration.ofSeconds(WAIT_POLL_TIME)).ignoring(Exception.class);
 
 		Function<WebDriver, Boolean> function = new Function<WebDriver, Boolean>() {
-			@Override
 			public Boolean apply(WebDriver wdriver) {
 				try {
 					List<WebElement> elements = wdriver.findElements(locator);
@@ -512,8 +672,7 @@ public class HtmlOps {
 					}
 					return elements.get(0).isDisplayed();
 				} catch (Exception e) {
-					log.debug(e.getMessage() + "\n");
-					log.debug("Trying again ...");
+					System.out.println(e.getMessage() + "\n");
 					return false;
 
 				}
@@ -524,13 +683,12 @@ public class HtmlOps {
 			wait.until(function);
 		} catch (TimeoutException e) {
 		}
-		log.info("Element is present with locator" + locator);
+		System.out.println("Element is present with locator" + locator);
 		return true;
 	}
-
 	public void sleep(int seconds) {
 		try {
-			log.info("Waiting for - " + seconds + " seconds");
+			System.out.println("Waiting for - " + seconds + " seconds");
 			Thread.sleep(1000 * seconds);
 		} catch (InterruptedException e) {
 
@@ -552,12 +710,9 @@ public class HtmlOps {
 			@Override
 			public Boolean apply(WebDriver driver) {
 				try {
-					log.info("wait for JQuery.active");
 					boolean t = ((Long) executeJavaScript("return jQuery.active") == 0);
 					if (t) {
-						log.info("returned true from jQuery.active");
-
-						boolean isLoaderHidden = (Boolean) executeJavaScript(
+						boolean isLoaderHidden = (boolean) executeJavaScript(
 								"return $('.spinner').is(':visible') == false");
 
 						return t && isLoaderHidden;
@@ -574,14 +729,13 @@ public class HtmlOps {
 							// to prevent infinite looping, get out of this function after specified number
 							// of
 							// minutes.
-							log.info("Timedout to prevent infinte loop, Exiting from jQuery.active");
+							System.out.println("Timedout to prevent infinte loop, Exiting from jQuery.active");
 							return true;
 						} else {
 							return false;
 						}
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
 					return true;
 				}
 			}
@@ -596,11 +750,9 @@ public class HtmlOps {
 			@Override
 			public Boolean apply(WebDriver driver) {
 				try {
-					log.info("wait for document.readyState to complete");
 
 					boolean t = executeJavaScript("return document.readyState").toString().equals("complete");
 					if (t) {
-						log.info("returned true from document.readyState to complete");
 						return t;
 					} else {
 
@@ -615,14 +767,13 @@ public class HtmlOps {
 							// to prevent infinite looping, get out of this function after specified number
 							// of
 							// minutes.
-							log.info("Timedout to prevent infinte loop, Exiting from document.readyState to complete");
+							System.out.println("Timedout to prevent infinte loop, Exiting from document.readyState to complete");
 							return true;
 						} else {
 							return false;
 						}
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
 					return true;
 				}
 			}
@@ -634,10 +785,8 @@ public class HtmlOps {
 	public boolean waitForJQuerytoLoad() {
 
 		new ExpectedCondition<Boolean>() {
-			@Override
 			public Boolean apply(WebDriver driver) {
 				try {
-					log.info("wait for JQuery.active");
 					return ((Long) executeJavaScript("return jQuery.active") == 0);
 				} catch (Exception e) {
 					return true;
@@ -656,5 +805,41 @@ public class HtmlOps {
 	public Wait<WebDriver> fluentWait(long timeOut, long frequency) {
 		return new FluentWait<WebDriver>((driver)).withTimeout(Duration.ofSeconds(timeOut))
 				.pollingEvery(Duration.ofSeconds(frequency)).ignoring(NoSuchElementException.class);
+	}
+
+	public boolean verifyLengthOfField(WebElement element, int length)
+	{
+		boolean isValid = false;
+		String fieldValue = getElementText(element);
+		if(length >= fieldValue.length())
+		{
+			isValid = true;
+		}
+		return isValid;
+	}
+
+	public boolean verifyHelperText(WebElement element, String inputtedText)
+	{
+		boolean isValid = false;
+		String heplerText = getElementText(element);
+		if(heplerText.contains(inputtedText))
+		{
+			isValid = true;
+		}
+		return isValid;
+	}
+	
+	public void clearClipBoard() {
+        StringSelection stringSelection = new StringSelection("");
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection, null);
+    }
+	
+	public String copyToClipBoard() {
+		String result = null;
+		try {
+			result = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
+		} catch (IOException | UnsupportedFlavorException | NullPointerException | IllegalStateException ex) {
+		}
+		return result;
 	}
 }
