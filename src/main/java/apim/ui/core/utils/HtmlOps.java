@@ -503,7 +503,7 @@ public class HtmlOps {
 				.pollingEvery(Duration.ofSeconds(WAIT_POLL_TIME)).ignoring(Exception.class);
 
 		Function<WebDriver, Boolean> function = new Function<WebDriver, Boolean>() {
-			@Override
+			
 			public Boolean apply(WebDriver wdriver) {
 				try {
 					List<WebElement> elements = wdriver.findElements(locator);
@@ -549,7 +549,7 @@ public class HtmlOps {
 		ExpectedCondition<Boolean> jQueryLoad = new ExpectedCondition<Boolean>() {
 			Date previous = new Date();
 
-			@Override
+			
 			public Boolean apply(WebDriver driver) {
 				try {
 					log.info("wait for JQuery.active");
@@ -593,7 +593,7 @@ public class HtmlOps {
 			// document.readystate is not returning as complete.
 			Date previous = new Date();
 
-			@Override
+			
 			public Boolean apply(WebDriver driver) {
 				try {
 					log.info("wait for document.readyState to complete");
@@ -634,7 +634,7 @@ public class HtmlOps {
 	public boolean waitForJQuerytoLoad() {
 
 		new ExpectedCondition<Boolean>() {
-			@Override
+			
 			public Boolean apply(WebDriver driver) {
 				try {
 					log.info("wait for JQuery.active");
