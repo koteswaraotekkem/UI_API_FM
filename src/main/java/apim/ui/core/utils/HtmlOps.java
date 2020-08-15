@@ -35,14 +35,13 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.google.common.base.Function;
 
-import lombok.extern.log4j.Log4j2;
 
 /** This Class is used to do the Selenium operations */
 
 /**
  * implicit timeouts of driver are set in setup plugin
  *
- * @author ganma05
+ * @author koteswarao tekkem
  */
 public class HtmlOps {
 	static long ajax_pageload_time = 15; // Seconds for page load.
