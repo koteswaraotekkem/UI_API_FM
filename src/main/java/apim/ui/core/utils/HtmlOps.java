@@ -658,33 +658,6 @@ public class HtmlOps {
 		((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView();", element);
 	}
 
-	public Boolean isElementDisplayed(final By locator) {
-		Wait<WebDriver> wait = new FluentWait<>(driver).withTimeout(Duration.ofSeconds(WAIT_TIME))
-				.pollingEvery(Duration.ofSeconds(WAIT_POLL_TIME)).ignoring(Exception.class);
-
-		Function<WebDriver, Boolean> function = new Function<WebDriver, Boolean>() {
-			public Boolean apply(WebDriver wdriver) {
-				try {
-					List<WebElement> elements = wdriver.findElements(locator);
-					if (elements.isEmpty()) {
-						return false;
-					}
-					return elements.get(0).isDisplayed();
-				} catch (Exception e) {
-					System.out.println(e.getMessage() + "\n");
-					return false;
-
-				}
-			}
-
-		};
-		try {
-			wait.until(function);
-		} catch (TimeoutException e) {
-		}
-		System.out.println("Element is present with locator" + locator);
-		return true;
-	}
 	public void sleep(int seconds) {
 		try {
 			System.out.println("Waiting for - " + seconds + " seconds");
@@ -793,17 +766,6 @@ public class HtmlOps {
 			}
 		};
 		return true;
-	}
-
-	/**
-	 * Wait polling till element available
-	 *
-	 * @param timeOut   Total timeout to wait for
-	 * @param frequency poll for element every frequency seconds
-	 */
-	public Wait<WebDriver> fluentWait(long timeOut, long frequency) {
-		return new FluentWait<WebDriver>((driver)).withTimeout(Duration.ofSeconds(timeOut))
-				.pollingEvery(Duration.ofSeconds(frequency)).ignoring(NoSuchElementException.class);
 	}
 
 	public boolean verifyLengthOfField(WebElement element, int length)
