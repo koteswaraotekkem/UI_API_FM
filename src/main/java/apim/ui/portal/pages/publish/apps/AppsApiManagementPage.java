@@ -45,7 +45,7 @@ public class AppsApiManagementPage extends PublishPageBase {
 
 	public String getSelectedApiName(String apiName) {
 		By selectedAPIs = By.xpath("//a[contains(@href, 'selected-apis-')]/div/div[text()='" + apiName + "']");
-		if (isElementDisplayed(selectedAPIs))
+		if (isElementExists(selectedAPIs))
 			return getElementText(selectedAPIs);
 		return "Invalid Element Text";
 

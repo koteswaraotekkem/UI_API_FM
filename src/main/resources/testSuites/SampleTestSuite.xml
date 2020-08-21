@@ -5,7 +5,7 @@
 	<test thread-count="5" name="TestNGXMLTest Test" verbose="2">
 		<classes>
 			<class name="apim.ui.portal.tests.LoginTest" />
-			<class name="apim.ui.portal.tests.CreateApiEulaTest" />
+		<!-- 	<class name="apim.ui.portal.tests.CreateApiEulaTest" /> -->
 		</classes>
 	</test>
 </suite>

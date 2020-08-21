@@ -20,6 +20,7 @@ import org.openqa.selenium.ElementClickInterceptedException;
 import org.openqa.selenium.ElementNotVisibleException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.SearchContext;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
@@ -43,12 +44,45 @@ import com.google.common.base.Function;
  *
  * @author koteswarao tekkem
  */
-public class HtmlOps {
+public class HtmlOps extends By {
 	static long ajax_pageload_time = 15; // Seconds for page load.
 	public static final int DEFAULT_UIELEMENT_WAIT_TIME = 15;
 	protected static final int WAIT_TIME = 45; // in seconds
 	private static final long WAIT_POLL_TIME = 5000; // in milliseconds
 	public static WebDriver driver;
+
+	private String locator;
+	private String value;
+	public HtmlOps() {
+		
+	}
+	public HtmlOps(String locator, String value) {
+		this.locator = locator;
+		this.value = value;
+	}
+
+	private By lowerCaseXpath() {
+		return By.xpath(String.format(locator, value.toLowerCase()));
+	}
+
+	private By upperCaseXpath() {
+		return By.xpath(String.format(locator, value.toUpperCase()));
+	}
+
+	@Override
+	public WebElement findElement(SearchContext searchContext) {
+		List<WebElement> list1 = ((WebDriver) searchContext).findElements(lowerCaseXpath());
+
+		if (list1.size() > 0)
+			return list1.get(0);
+
+		List<WebElement> list2 = ((WebDriver) searchContext).findElements(upperCaseXpath());
+
+		if (list2.size() > 0)
+			return list2.get(0);
+
+		throw new RuntimeException("cannot find the element with xpath " + String.format(locator, value.toLowerCase()));
+	}
 
 	public void navigateBack() {
 		driver.navigate().back();
@@ -658,33 +692,6 @@ public class HtmlOps {
 		((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView();", element);
 	}
 
-	public Boolean isElementDisplayed(final By locator) {
-		Wait<WebDriver> wait = new FluentWait<>(driver).withTimeout(Duration.ofSeconds(WAIT_TIME))
-				.pollingEvery(Duration.ofSeconds(WAIT_POLL_TIME)).ignoring(Exception.class);
-
-		Function<WebDriver, Boolean> function = new Function<WebDriver, Boolean>() {
-			public Boolean apply(WebDriver wdriver) {
-				try {
-					List<WebElement> elements = wdriver.findElements(locator);
-					if (elements.isEmpty()) {
-						return false;
-					}
-					return elements.get(0).isDisplayed();
-				} catch (Exception e) {
-					System.out.println(e.getMessage() + "\n");
-					return false;
-
-				}
-			}
-
-		};
-		try {
-			wait.until(function);
-		} catch (TimeoutException e) {
-		}
-		System.out.println("Element is present with locator" + locator);
-		return true;
-	}
 	public void sleep(int seconds) {
 		try {
 			System.out.println("Waiting for - " + seconds + " seconds");
@@ -795,17 +802,6 @@ public class HtmlOps {
 		return true;
 	}
 
-	/**
-	 * Wait polling till element available
-	 *
-	 * @param timeOut   Total timeout to wait for
-	 * @param frequency poll for element every frequency seconds
-	 */
-	public Wait<WebDriver> fluentWait(long timeOut, long frequency) {
-		return new FluentWait<WebDriver>((driver)).withTimeout(Duration.ofSeconds(timeOut))
-				.pollingEvery(Duration.ofSeconds(frequency)).ignoring(NoSuchElementException.class);
-	}
-
 	public boolean verifyLengthOfField(WebElement element, int length)
 	{
 		boolean isValid = false;
@@ -840,5 +836,11 @@ public class HtmlOps {
 		} catch (IOException | UnsupportedFlavorException | NullPointerException | IllegalStateException ex) {
 		}
 		return result;
+	}
+
+	@Override
+	public List<WebElement> findElements(SearchContext context) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
