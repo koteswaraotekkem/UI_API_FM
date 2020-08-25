@@ -20,7 +20,14 @@ import com.aventstack.extentreports.Status;
 import com.google.common.base.Throwables;
 
 import apim.ui.core.PortalTestBase;
+import apim.ui.core.UpdatesResults;
 import lombok.extern.slf4j.Slf4j;
+
+import org.influxdb.dto.Point;
+import org.testng.ITestContext;
+import org.testng.ITestListener;
+import org.testng.ITestResult;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class TestListener implements ITestListener {
@@ -39,12 +46,14 @@ public class TestListener implements ITestListener {
 
 	public void onTestSuccess(ITestResult result) {
 		ExtentTestManager.getTest().log(Status.PASS, "Test passed");
+		 this.postTestMethodStatus(result, "PASS");
 	}
 
 	public void onTestFailure(ITestResult result) {
 		log.info("*** Test execution " + result.getMethod().getMethodName() + " failed...");
 		log.info((result.getMethod().getMethodName() + " failed!"));
-
+		this.postTestMethodStatus(result, "FAIL");
+		
 		WebDriver driver = PortalTestBase.driver;
 
 		String targetLocation = null;
@@ -99,8 +108,24 @@ public class TestListener implements ITestListener {
 
 	public void onTestSkipped(ITestResult result) {
 		ExtentTestManager.getTest().log(Status.SKIP, "Test Skipped");
+		this.postTestMethodStatus(result, "SKIPPED");
 	}
 
 	public void onTestFailedButWithinSuccessPercentage(ITestResult result) {
 	}
+	
+	 public void postTestMethodStatus(ITestResult iTestResult, String status) {
+	        Point point = Point.measurement("testmethod").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+	                .tag("testclass", iTestResult.getTestClass().getName()).tag("name", iTestResult.getName())
+	                .tag("description", iTestResult.getMethod().getDescription()).tag("result", status)
+	                .addField("duration", (iTestResult.getEndMillis() - iTestResult.getStartMillis())).build();
+	        UpdatesResults.post(point);
+	    }
+	    public void postTestClassStatus(ITestContext iTestContext) {
+	        Point point = Point.measurement("testclass").time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+	                .tag("name", iTestContext.getAllTestMethods()[0].getTestClass().getName())
+	                .addField("duration", (iTestContext.getEndDate().getTime() - iTestContext.getStartDate().getTime()))
+	                .build();
+	        UpdatesResults.post(point);
+	    }
 }

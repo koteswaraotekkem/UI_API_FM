@@ -10,6 +10,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -25,6 +26,11 @@ import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.devtools.DevTools;
+import org.openqa.selenium.devtools.log.Log;
+import org.openqa.selenium.devtools.network.Network;
+import org.openqa.selenium.devtools.security.Security;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -93,6 +99,22 @@ public class HtmlOps extends By {
 			e.printStackTrace();
 		}
 	}
+	
+	public void getConsoleLog() {
+		List list = new ArrayList();
+		DevTools devConsole= ((ChromeDriver)driver).getDevTools();
+		devConsole.createSession();
+		devConsole.send(Security.enable());
+		
+		devConsole.addListener(Log.entryAdded(), entry -> list.add(entry.getText()));
+		
+		for (Object object : list) {
+			
+			System.out.println(object);
+		}
+		
+	}
+
 
 	/**
 	 * Set Value in an Input box
