@@ -47,6 +47,7 @@ public class LoginPage extends HtmlOps {
 	public DashboardPage loginWithCredentials(String userName, String passWord) {
 
 		log.info("Entering User Name");
+		click(loginPage.myAccLink);
 		setInputField(userName, loginPage.usernameField);
 
 		log.info("Entering Password");
@@ -60,16 +61,17 @@ public class LoginPage extends HtmlOps {
 
 	private static class PageObjects {
 
-		@CacheLookup
-		@FindBy(xpath = "//*[@id='login-form']/form/fieldset//input[@placeholder='Username']")
+		@FindBy(id = "email")
 		public WebElement usernameField;
+		
+		@FindBy(linkText = "My Account")
+		public WebElement myAccLink;
+		
 
-		@CacheLookup
-		@FindBy(xpath = "//*[@id='login-form']/form/fieldset//input[@placeholder='Password']")
+		@FindBy(id = "password")
 		public WebElement passwordField;
 
-		@CacheLookup
-		@FindBy(xpath = "//*[@id='login-form']//button[text()='Login']")
+		@FindBy(xpath = "/html/body/div[1]/div/div/div/div[1]/div/form/div[3]/button")
 		public WebElement loginBtn;
 
 	}
