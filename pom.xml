@@ -10,13 +10,11 @@
 	</properties>
 	<dependencies>
 	
-	<!-- <dependency>
+	<dependency>
 	<groupId>ATUTestRecorder</groupId>
 	<artifactId>ATUTestRecorder</artifactId>
 	<version>2.1</version>
-	<scope>system</scope>
-	<systemPath>${project.basedir}/src/main/resources/ATUTestRecorder-2.1.jar</systemPath>
-</dependency> -->
+</dependency>
 	
 	
 		<dependency>
