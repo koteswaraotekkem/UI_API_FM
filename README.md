@@ -1,4 +1,4 @@
-# UI-testsing-Framework
+# UI-API-TestNG-Framework
 Install lombok pluggin to eclipse
 
 Run a maven command before start the execution
