@@ -2,15 +2,15 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 <suite name="TestNGXMLTest Test Suite"
 	configfailurepolicy="continue">
-	 <listeners>
-	<listener class-name="apim.ui.core.utils.TestListener" />
-</listeners>
+	<listeners>
+		<listener class-name="apim.ui.core.utils.TestListener" />
+	</listeners>
 	<test thread-count="1" name="TestNGXMLTest Test" verbose="2">
 		<classes>
 			<class name="apim.ui.portal.tests.LoginTest" />
-			<!-- <class name="apim.ui.portal.tests.administration.AdministrationTests" />
-			<class name="apim.ui.portal.tests.publish.ApiExplorerTests" />
-			<class name="apim.ui.portal.tests.publish.api.details.ApiDetailsSpecTabTests" /> -->
+			<!-- <class name="apim.ui.portal.tests.administration.AdministrationTests" 
+				/> <class name="apim.ui.portal.tests.publish.ApiExplorerTests" /> <class 
+				name="apim.ui.portal.tests.publish.api.details.ApiDetailsSpecTabTests" /> -->
 		</classes>
 	</test>
 </suite>
