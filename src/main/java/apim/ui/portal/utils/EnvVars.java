@@ -68,7 +68,7 @@ public class EnvVars {
 
 		if (prop == null || prop.equals("${" + propName + "}") || prop.isEmpty()) {
 			log.debug("Param '" + propName + "' is not defined at CI/CD job and = '" + prop
-					+ "'. Getting value from config.properties file.");
+					+ "'. Getting value from config.properties   vfr file.");
 			prop = PortalUtils.getPropertyValue(propName);
 			if (prop == null) {
 				log.error("Param '" + propName + "' is missed (at CI/CD, "
