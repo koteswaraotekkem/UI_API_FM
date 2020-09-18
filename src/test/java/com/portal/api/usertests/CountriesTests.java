@@ -167,7 +167,11 @@ public void getUser() {
 		
 	}
 	
-	
-	
+	@Test
+	public void getAllCountries() {
+		System.out.println("Get All users...");
+		Response resp =given().when().get("https://restcountries.eu/rest/v2/all").then().assertThat().statusCode(200).extract().response();
+		
+	}
 
 }

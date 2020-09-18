@@ -109,6 +109,7 @@
 			<artifactId>spring-mock-mvc</artifactId>
 			<version>3.0.6</version>
 		</dependency>
+
 	</dependencies>
 	<build>
 		<sourceDirectory></sourceDirectory>
