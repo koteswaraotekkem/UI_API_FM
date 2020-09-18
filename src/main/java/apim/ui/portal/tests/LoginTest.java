@@ -18,7 +18,7 @@ public class LoginTest extends PortalTestBase {
 		log.info("Login Test");
 		LoginPage loginPage = new LoginPage();
 		DashboardPage dashPage = loginPage.loginToPortal();
-	//	driver.findElement(RelativeLocator.withTagName("input").)
+		driver.findElement(RelativeLocator.withTagName("input").)
 		
 
 	}
